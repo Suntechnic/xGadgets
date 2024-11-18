@@ -2,7 +2,7 @@
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 if ($arParams['PERMISSION'] <= "R") die();
 
-$arGadgetParams['RND_STRING'] = randString(8);
+$arGadget['INSTANCE_UID'] = randString(8);
 
 $refOptions = array_filter(\App\Settings::getOptionsInfo(), function ($dctO) {
         return ($dctO['title'] && $dctO['type']);
@@ -51,7 +51,7 @@ foreach ($refOptions as $CodeOption=>$dctOption) {
 
     <?
     if (count($lstTabs) > 1) {
-        $tabControl = new \CAdminViewTabControl("tabControl", $lstTabs);
+        $tabControl = new \CAdminViewTabControl('tabControl_appoptions_'.$arGadget['INSTANCE_UID'], $lstTabs);
         $tabControl->Begin();
     }
 
@@ -64,10 +64,10 @@ foreach ($refOptions as $CodeOption=>$dctOption) {
             <tr>
                 <td class="adm-detail-content-cell-l">
                     <?if ($dctOption['hint']):?>
-                    <span id="app_options_<?=$arGadgetParams['RND_STRING']?>_<?=$CodeOption?>">?</span>
+                    <span id="app_options_<?=$arGadget['INSTANCE_UID']?>_<?=$CodeOption?>">?</span>
                     <script>
                     BX.hint_replace(
-                            BX('app_options_<?=$arGadgetParams['RND_STRING']?>_<?=$CodeOption?>'), 
+                            BX('app_options_<?=$arGadget['INSTANCE_UID']?>_<?=$CodeOption?>'), 
                             '<?=CUtil::JSEscape($dctOption['hint']);?>'
                         );
                     </script>
