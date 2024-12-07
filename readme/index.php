@@ -27,28 +27,23 @@ $lstTabs = [];
 foreach ($lstFiles as $I=>$SysFilePath) {
     $lstTabs[] = [
                 'DIV' => md5($SysFilePath),
-                'TAB' => basename($SysFilePath),
+                'TAB' => substr(basename($SysFilePath),0,-3),
                 'INDEX' => $I
             ];
 }
 
-?>
 
+$tabControl = new \CAdminViewTabControl('tabControl_readme_'.$arGadget['INSTANCE_UID'], $lstTabs);
+$tabControl->Begin();
 
+include(__DIR__.'/vendor/autoload.php');
 
-<?
-if (count($lstTabs) > 1) {
-    $tabControl = new \CAdminViewTabControl('tabControl_readme_'.$arGadget['INSTANCE_UID'], $lstTabs);
-    $tabControl->Begin();
+foreach ($lstTabs as $dctTab) { $tabControl->BeginNextTab();
 
-    include(__DIR__.'/vendor/autoload.php');
+    $SysDirPath = $lstFiles[$dctTab['INDEX']];
+    $StrFile = file_get_contents($SysDirPath);
 
-    foreach ($lstTabs as $dctTab) { $tabControl->BeginNextTab();
-
-        $SysDirPath = $lstFiles[$dctTab['INDEX']];
-        $StrFile = file_get_contents($SysDirPath);
-
-        echo \Michelf\Markdown::defaultTransform($StrFile);
-    }
-    $tabControl->End();
+    echo \Michelf\Markdown::defaultTransform($StrFile);
 }
+$tabControl->End();
+
