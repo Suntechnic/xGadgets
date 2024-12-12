@@ -10,6 +10,7 @@ $SysDirPath = \Bitrix\Main\Application::getDocumentRoot().$DirPath;
 
 $lstFiles = [];
 foreach (glob($SysDirPath.'/*.md') as $FileName) {
+    if(substr(file_get_contents($FileName),0,14) == '[//]:#(hidden)') continue;
     $lstFiles[] = $FileName;
 }
 
@@ -40,8 +41,8 @@ include(__DIR__.'/vendor/autoload.php');
 
 foreach ($lstTabs as $dctTab) { $tabControl->BeginNextTab();
 
-    $SysDirPath = $lstFiles[$dctTab['INDEX']];
-    $StrFile = file_get_contents($SysDirPath);
+    $FileName = $lstFiles[$dctTab['INDEX']];
+    $StrFile = file_get_contents($FileName);
 
     echo \Michelf\Markdown::defaultTransform($StrFile);
 }
