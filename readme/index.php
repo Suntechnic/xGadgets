@@ -10,6 +10,7 @@ $SysDirPath = \Bitrix\Main\Application::getDocumentRoot().$DirPath;
 
 $lstFiles = [];
 foreach (glob($SysDirPath.'/*.md') as $FileName) {
+    if(substr(file_get_contents($FileName),0,14) == '[//]:#(hidden)') continue;
     $lstFiles[] = $FileName;
 }
 
@@ -27,28 +28,23 @@ $lstTabs = [];
 foreach ($lstFiles as $I=>$SysFilePath) {
     $lstTabs[] = [
                 'DIV' => md5($SysFilePath),
-                'TAB' => basename($SysFilePath),
+                'TAB' => substr(basename($SysFilePath),0,-3),
                 'INDEX' => $I
             ];
 }
 
-?>
 
+$tabControl = new \CAdminViewTabControl('tabControl_readme_'.$arGadget['INSTANCE_UID'], $lstTabs);
+$tabControl->Begin();
 
+include(__DIR__.'/vendor/autoload.php');
 
-<?
-if (count($lstTabs) > 1) {
-    $tabControl = new \CAdminViewTabControl('tabControl_readme_'.$arGadget['INSTANCE_UID'], $lstTabs);
-    $tabControl->Begin();
+foreach ($lstTabs as $dctTab) { $tabControl->BeginNextTab();
 
-    include(__DIR__.'/vendor/autoload.php');
+    $FileName = $lstFiles[$dctTab['INDEX']];
+    $StrFile = file_get_contents($FileName);
 
-    foreach ($lstTabs as $dctTab) { $tabControl->BeginNextTab();
-
-        $SysDirPath = $lstFiles[$dctTab['INDEX']];
-        $StrFile = file_get_contents($SysDirPath);
-
-        echo \Michelf\Markdown::defaultTransform($StrFile);
-    }
-    $tabControl->End();
+    echo \Michelf\Markdown::defaultTransform($StrFile);
 }
+$tabControl->End();
+
