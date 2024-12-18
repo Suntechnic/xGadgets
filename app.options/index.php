@@ -98,7 +98,7 @@ foreach ($refOptions as $CodeOption=>$dctOption) {
                             style="width:100%"
                             name="x_app_options[<?=$CodeOption?>]" 
                         ><?=\App\Settings::getOption($CodeOption)?></textarea>
-                    <?elseif($dctOption['type'] == 'integer'):?>
+                    <?elseif($dctOption['type'] == 'integer' || $dctOption['type'] == 'float'):?>
                     <input 
                             type="num"
                             name="x_app_options[<?=$CodeOption?>]" 
