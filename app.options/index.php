@@ -4,43 +4,46 @@ if ($arParams['PERMISSION'] <= "R") die();
 
 $arGadget['INSTANCE_UID'] = randString(8);
 
-$refOptions = array_filter(\App\Settings::getOptionsInfo(), function ($dctO) {
-        return ($dctO['title'] && $dctO['type']);
-    });
-// отфильтруем только опции с описанным типом и тайтлом
+if (class_exists('\App\Settings')) {
+
+    $refOptions = array_filter(\App\Settings::getOptionsInfo(), function ($dctO) {
+            return ($dctO['title'] && $dctO['type']);
+        });
+    // отфильтруем только опции с описанным типом и тайтлом
 
 
-if (
-        $_SERVER['REQUEST_METHOD'] == 'POST' 
-        && $_REQUEST['agm-gadget'] == 'Y' 
-        && $_REQUEST['agm-gadget-id'] == $id
-    ) {
-    foreach ($_REQUEST['x_app_options'] as $CodeOption=>$Value) {
-        if ($refOptions[$CodeOption]) {
-            \App\Settings::setOption($CodeOption,$Value);
+    if (
+            $_SERVER['REQUEST_METHOD'] == 'POST' 
+            && $_REQUEST['agm-gadget'] == 'Y' 
+            && $_REQUEST['agm-gadget-id'] == $id
+        ) {
+        foreach ($_REQUEST['x_app_options'] as $CodeOption=>$Value) {
+            if ($refOptions[$CodeOption]) {
+                \App\Settings::setOption($CodeOption,$Value);
+            }
         }
-    }
-    LocalRedirect('/bitrix/admin/index.php');
-}
-
-
-
-
-$lstTabs = [];
-$refTabs = ['more' => ['index' => 0, 'options' => []]];
-foreach ($refOptions as $CodeOption=>$dctOption) {
-    if (!$dctOption['tab']) $dctOption['tab'] = 'Разное';
-    $TabCode = md5($dctOption['tab']);
-    if (!$refTabs[$TabCode]) {
-        $refTabs[$TabCode] = ['index' => count($lstTabs), 'options' => []];
-        $lstTabs[] = [
-                'DIV' => $TabCode,
-                'TAB' => $dctOption['tab']
-            ];
+        LocalRedirect('/bitrix/admin/index.php');
     }
 
-    $refTabs[$TabCode]['options'][] =  $CodeOption;
-}
+
+
+
+    $lstTabs = [];
+    $refTabs = ['more' => ['index' => 0, 'options' => []]];
+    foreach ($refOptions as $CodeOption=>$dctOption) {
+        if (!$dctOption['tab']) $dctOption['tab'] = 'Разное';
+        $TabCode = md5($dctOption['tab']);
+        if (!$refTabs[$TabCode]) {
+            $refTabs[$TabCode] = ['index' => count($lstTabs), 'options' => []];
+            $lstTabs[] = [
+                    'DIV' => $TabCode,
+                    'TAB' => $dctOption['tab']
+                ];
+        }
+
+        $refTabs[$TabCode]['options'][] =  $CodeOption;
+    }
+
 
 
 ?>
@@ -121,3 +124,82 @@ foreach ($refOptions as $CodeOption=>$dctOption) {
     ?>
     <input type="submit" value="Сохранить" class="adm-btn-save" />
 </form>
+
+<?php
+return;
+}
+
+?>
+<h2>Нет настроек приложения</h2>
+<label>
+    Создайте файл с классом App/Settings со следующим содержанием:
+</label>
+<pre>
+namespace App
+{ 
+    class Settings extends \Bxx\Abstraction\Settings 
+    {
+        public const OPTIONS = [
+            'onlinecredit' => [
+                    'tab' => 'Кредит',
+                    'title' => 'Онлайн кредитование',
+                    'default' => true,
+                    'type' => 'bool'
+                ],
+            'onlinecreditK' => [
+                    'tab' => 'Кредит',
+                    'title' => 'Множетель для рассчета ставки на 24 месяца',
+                    'default' => 1.28,
+                    'type' => 'float'
+                ],
+            'priceup' => [
+                    'tab' => 'Цены',
+                    'title' => 'Процент увеличения Второй цены',
+                    'default' => 6,
+                    'type' => 'integer'
+                ],
+            'priceplaceholder' => [
+                    'tab' => 'Цены',
+                    'title' => 'Фраза для вывода вместо цены',
+                    'default' => 'Цену уточняйте',
+                    'type' => 'string'
+                ],
+            'dlvr_closetime' => [
+                    'tab' => 'Доставка',
+                    'title' => 'Закрытие доставки',
+                    'hint' => 'товары заказанные после этого времени доставляются на следующий день',
+                    'default' => 19,
+                    'type' => 'integer',
+                    'exampleMethod' => '\App\Settings::deliveryExample'
+                ],
+            
+        ]; 
+
+        public static function deliveryExample (): string
+        {
+            $HTML = '';
+
+            $lstPrices = [
+                    \App\Settings::getOption('dlvr_cheapgoods')/2,
+                    \App\Settings::getOption('dlvr_cheapgoods')*10
+                ];
+            $lstTimes = [
+                \App\Settings::getOption('dlvr_opentime')-1,
+                \App\Settings::getOption('dlvr_opentime')+1,
+                \App\Settings::getOption('dlvr_closetime')-1,
+                \App\Settings::getOption('dlvr_closetime')+1,
+            ];
+
+            foreach ($lstPrices as $Price) {
+            foreach ($lstTimes as $Time) {
+                $lstRule = \App\Delivery::getRules($Price,$Time);
+                $HTML.= '<div style="padding:8px">Для товара стомостью '.$Price.' в '.$Time.'ч. доставка будет:<br>';
+                $HTML.= implode('<br>',$lstRule).'</div>';
+            }
+            }
+            
+            return $HTML;
+        }
+    }
+}      
+</pre>
