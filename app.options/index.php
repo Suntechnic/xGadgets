@@ -75,7 +75,10 @@ if (class_exists('\App\Settings')) {
                         );
                     </script>
                     <?endif?>
-                    <?=$dctOption['title'];?>
+                    <details>
+                        <summary style="cursor: pointer"><?=$dctOption['title'];?></summary>
+                        <?=$CodeOption?>
+                    </details>
                 </td>
                 <td class="adm-detail-content-cell-r">
                     <?if($dctOption['type'] == 'bool'):?>
