@@ -81,7 +81,21 @@ if (class_exists('\App\Settings')) {
                     </details>
                 </td>
                 <td class="adm-detail-content-cell-r">
-                    <?if($dctOption['type'] == 'bool'):?>
+                    <?if($dctOption['enum']): $refSelectOptions = \App\Settings::getEnum($CodeOption);?>
+                    <select name="x_app_options[<?=$CodeOption?>]">
+                        <option value="">
+                            -- не выбрано --
+                        </option>
+                        <?foreach ($refSelectOptions as $Key=>$Val):?>
+                        <option 
+                                value="<?=htmlspecialcharsbx($Key)?>" 
+                                <?if (\App\Settings::getOption($CodeOption) == $Key):?>selected<?endif;?>
+                            >
+                            <?=htmlspecialcharsbx($Val)?>
+                        </option>
+                        <?endforeach?>
+                    </select>
+                    <?elseif($dctOption['type'] == 'bool'):?>
                     <input 
                             type="hidden" 
                             name="x_app_options[<?=$CodeOption?>]" 
